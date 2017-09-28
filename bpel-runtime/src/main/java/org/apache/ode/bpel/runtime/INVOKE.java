@@ -170,9 +170,14 @@ public class INVOKE extends ACTIVITY {
                         QName faultName = getBpelRuntimeContext().getPartnerFault(mexId);
                         Element msg = getBpelRuntimeContext().getPartnerResponse(mexId);
                         QName msgType = getBpelRuntimeContext().getPartnerResponseType(mexId);
-                        FaultData fault = createFault(faultName, msg,
-                                _oinvoke.getOwner().getMessageTypes().get(msgType), _self.o);
-                        _self.parent.completed(fault, CompensationHandler.emptySet());
+                        __log.error("Failure during invoke: " + faultName.getLocalPart());
+                        try {
+                            Element el = DOMUtils.stringToDOM("<invokeFailure><![CDATA["+faultName.getLocalPart()+"]]></invokeFailure>");
+                            _self.parent.failure(faultName.getLocalPart(), el);
+                        } catch (Exception e) {
+                            _self.parent.failure(faultName.getLocalPart(), null);
+                        }
+                        // Resuming the process creates a new invoke
                         getBpelRuntimeContext().releasePartnerMex(mexId, false);
                     }
 
